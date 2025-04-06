@@ -1,0 +1,63 @@
+version: '3.8'
+
+services:
+  app:
+    build: .
+    container_name: go_app
+    ports:
+      - "8080:8080"
+    depends_on:
+      - mongodb
+      - redis
+    environment:
+      SERVER_ADDRESS: ":8080"
+      PORT: "8080"
+      CONTEXT_TIMEOUT: "2"
+      FOOTBALL_DATA_AREA_API_URL: "http://api.football-data.org/v4/areas/"
+      FOOTBALL_DATA_TEAM_API_URL: "http://api.football-data.org/v4/teams/"
+      FOOTBALL_DATA_PLAYER_API_URL: "http://api.football-data.org/v4/persons/"
+      FOOTBALL_DATA_API_KEY: "api_key"
+      MONGODB_URL: "mongodb"
+      MONGODB_PORT: "27017"
+      MONGODB_DB_NAME: "football-data"
+      MONGODB_USERNAME: "admin"
+      MONGODB_PASSWORD: "secret"
+      REDIS_URL: "redis"
+      REDIS_PORT: "6379"
+      REDIS_PASSWORD: "secret"
+    networks:
+      - app_network
+
+  mongodb:
+    image: mongo:latest
+    container_name: mongodb
+    ports:
+      - "27017:27017"
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: "admin"
+      MONGO_INITDB_ROOT_PASSWORD: "secret"
+    networks:
+      - app_network
+    volumes:
+      - mongodb_data:/data/db
+
+  redis:
+    image: redis:latest
+    container_name: redis
+    command: redis-server --requirepass secret
+    ports:
+      - "6379:6379"
+    environment:
+      REDIS_PASSWORD: "secret"
+    networks:
+      - app_network
+    volumes:
+      - redis_data:/data
+
+networks:
+  app_network:
+    driver: bridge
+
+volumes:
+  mongodb_data:
+  redis_data:
